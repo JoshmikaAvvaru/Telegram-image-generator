@@ -1,0 +1,192 @@
+{
+  "name": "image generation bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -432,
+        -288
+      ],
+      "id": "aed2676c-dde8-4072-a668-5b959e6d9dc5",
+      "name": "Telegram Trigger",
+      "webhookId": "60f3a6d9-7280-4c66-b749-fe6ef5dc83e0",
+      "credentials": {
+        "telegramApi": {
+          "id": "aQ0HpuHsJ8LZFW7V",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are a prompt enhancer and your job is to enhance to user text or message provided\nuser message:{{ $json.message.text }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -224,
+        -288
+      ],
+      "id": "95c5de05-d3e2-402d-bf3a-109a1e072e33",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -80
+      ],
+      "id": "a7aa0aae-187c-429b-a7de-71b5af98e484",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KopcWaqj5BDSmTe1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        128,
+        -256
+      ],
+      "id": "193e5a61-778a-4504-ac3a-ca80c1b23421",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "EBf909khyFQJTbHV",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -256
+      ],
+      "id": "aa40b747-9f0c-409a-b1a3-fa58cff26a8a",
+      "name": "Send a photo message",
+      "webhookId": "a625c4e6-73c4-43a1-9f8d-0fe82133e1a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "aQ0HpuHsJ8LZFW7V",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "177c7722-14a2-4e3e-a017-6d2980147401",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5c4b3f87-c35d-4d15-9985-b34d1acdf719",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dfe671e779aeedddad76387d152f7addc1fea874dd040cc7c4c03b2df42ebe77"
+  },
+  "id": "JZgwEiOZtOeMM8xK",
+  "tags": []
+}
